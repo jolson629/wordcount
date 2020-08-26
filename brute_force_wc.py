@@ -33,20 +33,40 @@ def main(argv):
    tmp = '/tmp'
    p = getCmdLineParser()
    args = p.parse_args()
-   print('Starting processing %s/%s (%s)' % (args.bucket,args.inputKey,args.region))
+
+   bucket = None
+   inputKey = None
+   outputKey = None
+   region = None
+
+   
+   if args.bucket is None:
+      bucket = os.environ['BUCKET']
+      
+   if args.inputKey is None:
+      inputKey = os.environ['INPUTKEY']
+      
+   if args.outputKey is None:
+      outputKey = os.environ['OUTPUTKEY']
+      
+   if args.region is None:
+      region = os.environ['REGION']
+      
+   
+   print('Starting processing %s/%s (%s)' % (bucket, inputKey, region))
    # Get the input set 
-   if os.path.exists('%s/%s' % (tmp, args.inputKey)):
-     os.remove('%s/%s' % (tmp, args.inputKey))
-   s3 = boto3.resource('s3', region_name=args.region)
+   if os.path.exists('%s/%s' % (tmp, inputKey)):
+     os.remove('%s/%s' % (tmp, inputKey))
+   s3 = boto3.resource('s3', region_name=region)
    try:
-      s3.Bucket(args.bucket).download_file(args.inputKey, tmp+'/'+args.inputKey)
+      s3.Bucket(bucket).download_file(inputKey, tmp+'/'+inputKey)
    # todo: figure out the proper exceptions here...
    except Exception as e:
-      print('Error accessing %s/%s (%s). Error: %s' % (args.bucket, args.inputKey, args.region, e))
+      print('Error accessing %s/%s (%s). Error: %s' % (bucket, inputKey, region, e))
       print('Exiting...')
       sys.exit(-1)
       
-   text = open('%s/%s' % (tmp, args.inputKey), 'r') 
+   text = open('%s/%s' % (tmp, inputKey), 'r') 
 
    # Create an empty dictionary 
    d = dict() 
@@ -74,11 +94,11 @@ def main(argv):
             # Add the word to dictionary with count 1 
             d[word] = 1
    try:         
-      s3.Object(args.bucket, args.outputKey).put(Body=json.dumps(d))
-      print('Finished processing %s/%s. Wrote %s/%s (%s)' % (args.bucket,args.inputKey, args.bucket, args.outputKey, args.region))
+      s3.Object(bucket, outputKey).put(Body=json.dumps(d))
+      print('Finished processing %s/%s. Wrote %s/%s (%s)' % (bucket, inputKey, bucket, outputKey, region))
    # todo: figure out the proper exceptions here...
    except Exception as e:
-      print('Error writing %s/%s (%s). Error: %s' % (args.bucket, args.outputKey, args.region, e))
+      print('Error writing %s/%s (%s). Error: %s' % (bucket, outputKey, region, e))
       print('Exiting...')
       sys.exit(-1)      
       

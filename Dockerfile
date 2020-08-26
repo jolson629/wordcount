@@ -9,6 +9,19 @@ ENV AWS_SECRET_ACCESS_KEY=$aws_secret_access_key
 ARG aws_default_region
 ENV AWS_DEFAULT_REGION=$aws_default_region
 
+ARG bucket
+ENV BUCKET=$bucket
+
+ARG region
+ENV REGION=$region
+
+ARG inputkey
+ENV INPUTKEY=$inputkey
+
+ARG outputkey
+ENV OUTPUTKEY=$outputkey
+
+
 RUN apt-get update
 RUN apt-get install -y software-properties-common
 
